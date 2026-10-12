@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<!--
+  小鲤 · 生日页（单文件，手机优先，无外部依赖）
+  ─────────────────────────────────────────────
+  ✏️ 你可以改的地方，都在正文里用 ✏️ 标出来了，主要就三处：
+     1. 「值得被认真祝福一次」那一段 → 换成你们之间真实的一件小事（最重要！）
+     2. 落款：想加名字就加（end 区块里有注释）
+     3. 通篇文案随你改，改完直接刷新浏览器就能看效果
+
+  ⚠️ 改之前先复制一份备份，别改坏了。
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f7f2e8">
+<meta name="format-detection" content="telephone=no">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="十月十三日，写给小鲤。">
+<title>小鲤，生日快乐</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%23ac3d2b'/%3E%3Cpath d='M18 50c8-11 26-11 34 0-8 11-26 11-34 0z' fill='%23fbf3e9'/%3E%3Cpath d='M18 50l-9-8 3 8-3 8z' fill='%23fbf3e9'/%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#f7f2e8;
+  --paper-2:#fbf7ef;
+  --ink:#332f29;
+  --ink-2:#6f675b;
+  --ink-3:#a2988a;
+  --red:#c1503a;
+  --red-deep:#ac3d2b;
+  --water:#93a89b;
+  --serif:"Songti SC","STSong","Noto Serif CJK SC","Noto Serif SC","Source Han Serif SC","SimSun",serif;
+  --kai:"Kaiti SC","STKaiti","KaiTi","Noto Serif CJK SC","Songti SC","STSong",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--paper)}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:17px;
+  line-height:2.05;
+  letter-spacing:.02em;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+/* 纸纹：一层极淡的噪点，让底色不那么"干净得像网页" */
+body::before{
+  content:"";
+  position:fixed;inset:0;
+  z-index:9999;
+  pointer-events:none;
+  opacity:.35;
+  mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E");
+}
+::selection{background:rgba(193,80,58,.16)}
+.wrap{
+  position:relative;
+  max-width:560px;
+  margin:0 auto;
+  padding:calc(46px + env(safe-area-inset-top)) calc(26px + env(safe-area-inset-right)) calc(52px + env(safe-area-inset-bottom)) calc(26px + env(safe-area-inset-left));
+}
+
+/* ── 顶部 ───────────────────────────── */
+.hero{text-align:center;padding-top:6px}
+.date{
+  margin:0 0 24px;
+  font-family:var(--sans);
+  font-size:12px;
+  letter-spacing:.3em;text-indent:.3em;
+  color:var(--ink-3);
+}
+.koi-wrap{width:min(276px,72vw);margin:0 auto}
+.koi{
+  display:block;width:100%;height:auto;
+  cursor:pointer;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  animation:bob 5.5s ease-in-out infinite;
+}
+.koi-hint{
+  margin:2px 0 0;
+  font-family:var(--sans);
+  font-size:11.5px;letter-spacing:.08em;
+  color:var(--ink-3);
+}
+.title{
+  margin:20px 0 0;
+  font-family:var(--kai);
+  font-weight:400;
+  font-size:clamp(48px,15vw,64px);
+  line-height:1.12;
+  letter-spacing:.16em;text-indent:.16em;
+}
+.subtitle{
+  margin:12px 0 0;
+  font-family:var(--kai);
+  font-size:19px;
+  letter-spacing:.46em;text-indent:.46em;
+  color:var(--red);
+}
+
+/* ── 正文（信） ─────────────────────── */
+.letter{margin-top:62px}
+.letter p{margin:0 0 1.15em;text-indent:2em}
+.letter .salutation{
+  text-indent:0;
+  font-family:var(--kai);
+  font-size:19px;letter-spacing:.06em;
+  margin-bottom:1.5em;
+}
+.wishes{text-indent:0;padding-left:2em;margin-bottom:1.4em}
+.wishes span{display:block}
+
+/* ── 分隔 ───────────────────────────── */
+.divider{margin:52px 0 44px}
+.divider svg{display:block;width:100%;height:auto;overflow:visible}
+
+/* ── 蜡烛 ───────────────────────────── */
+.candle-block{text-align:center;margin-bottom:54px}
+.candle-hint{
+  margin:0 0 20px;
+  font-family:var(--sans);
+  font-size:12.5px;letter-spacing:.14em;
+  color:var(--ink-3);
+  transition:color .5s;
+}
+.candle-btn{
+  display:inline-block;
+  padding:4px;border:0;background:none;
+  cursor:pointer;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.candle-svg{display:block;width:148px;height:auto}
+.glow{animation:pulse 3.6s ease-in-out infinite;transition:opacity .6s}
+.flame{
+  transform-box:fill-box;transform-origin:50% 100%;
+  animation:flicker 1.8s ease-in-out infinite;
+  transition:transform .4s ease,opacity .4s ease;
+}
+.smoke{opacity:0;transform-box:fill-box;transform-origin:50% 100%}
+.candle-btn.out .glow{animation:none;opacity:0}
+.candle-btn.out .flame{animation:none;opacity:0;transform:scale(.32,.12) translateY(12px)}
+.candle-btn.out .smoke{animation:smoke 2.6s ease-out forwards}
+.after{
+  margin:26px 0 0;
+  font-family:var(--kai);
+  font-size:17.5px;line-height:1.9;
+  opacity:0;transform:translateY(10px);
+  transition:opacity .9s ease,transform .9s ease;
+}
+.after.show{opacity:1;transform:none}
+.after span{display:inline-block;margin-top:.35em;font-size:15.5px;color:var(--ink-2)}
+
+/* ── 落款 ───────────────────────────── */
+.end{text-align:right}
+.end-line{
+  margin:0 0 8px;
+  font-family:var(--kai);
+  font-size:17px;letter-spacing:.08em;
+}
+.end-date{
+  margin:0 0 22px;
+  font-family:var(--sans);
+  font-size:11.5px;letter-spacing:.22em;
+  color:var(--ink-3);
+}
+.seal{
+  display:inline-grid;
+  grid-template-columns:1fr 1fr;
+  place-items:center;
+  width:56px;height:56px;
+  border-radius:6px 5px 7px 5px;
+  background:var(--red-deep);
+  color:#fbf3e9;
+  font-family:var(--kai);
+  font-size:19px;line-height:1;
+  transform:rotate(-2.5deg);
+  box-shadow:inset 0 0 0 2px rgba(251,243,233,.42),0 1px 2px rgba(51,47,41,.1);
+}
+.seal span{display:block;line-height:1}
+
+/* ── 动效 ───────────────────────────── */
+@keyframes bob{
+  0%,100%{transform:translateY(0) rotate(-1deg)}
+  50%{transform:translateY(-7px) rotate(1.2deg)}
+}
+.koi .tail{transform-box:view-box;transform-origin:149px 62px;animation:wag 2.6s ease-in-out infinite}
+@keyframes wag{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+.koi .ripple{transform-box:fill-box;transform-origin:center;animation:ripple 5.4s ease-out infinite}
+.koi .r2{animation-delay:2.7s}
+@keyframes ripple{
+  0%{transform:scale(.55);opacity:0}
+  14%{opacity:.5}
+  70%{transform:scale(1.12);opacity:0}
+  100%{opacity:0}
+}
+.koi.happy{animation:happy .95s cubic-bezier(.34,1.35,.5,1)}
+@keyframes happy{
+  0%{transform:rotate(0) scale(1)}
+  35%{transform:rotate(-11deg) scale(1.07)}
+  70%{transform:rotate(7deg) scale(1.02)}
+  100%{transform:rotate(0) scale(1)}
+}
+@keyframes flicker{
+  0%,100%{transform:scale(1,1) translateY(0)}
+  30%{transform:scale(.96,1.07) translateY(-1px)}
+  62%{transform:scale(1.03,.97) translateY(1px)}
+}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:.85}}
+@keyframes smoke{
+  0%{opacity:0;transform:translateY(4px) scale(.9)}
+  22%{opacity:.5}
+  100%{opacity:0;transform:translateY(-30px) scale(1.15)}
+}
+.divider .mini{transform-box:view-box;transform-origin:center;animation:drift 12s ease-in-out infinite alternate}
+@keyframes drift{from{transform:translateX(-4px)}to{transform:translateX(30px)}}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <header class="hero">
+    <p class="date">二〇二六年 · 十月十三日</p>
+
+    <div class="koi-wrap">
+      <svg id="koi" class="koi" viewBox="0 0 220 150" role="img" tabindex="0"
+           aria-label="一条小锦鲤">
+        <defs>
+          <clipPath id="koiClip">
+            <path d="M24 62C28 36 76 22 118 32C134 36 146 46 149 54L149 70C146 78 134 88 118 92C76 102 28 88 24 62Z"/>
+          </clipPath>
+        </defs>
+
+        <!-- 水纹 -->
+        <g fill="none" stroke="#93a89b" stroke-linecap="round" opacity=".45">
+          <path d="M6 118C36 113 66 123 96 118S156 111 214 118" stroke-width="1.1"/>
+          <path d="M20 130C48 126 76 134 104 130S164 124 206 130" stroke-width="1" opacity=".7"/>
+        </g>
+
+        <!-- 涟漪 -->
+        <g fill="none" stroke="#93a89b" stroke-width="1.1">
+          <ellipse class="ripple r1" cx="104" cy="120" rx="56" ry="6.5"/>
+          <ellipse class="ripple r2" cx="104" cy="120" rx="36" ry="4.2"/>
+        </g>
+
+        <!-- 尾巴 -->
+        <g class="tail">
+          <path d="M147 52C160 40 176 32 190 29C183 43 180 54 180 62C180 70 183 81 190 95C176 92 160 84 147 72Z"
+                fill="#f6e9df" stroke="#3a352c" stroke-width="1.6" stroke-linejoin="round"/>
+        </g>
+
+        <!-- 身体 -->
+        <path d="M24 62C28 36 76 22 118 32C134 36 146 46 149 54L149 70C146 78 134 88 118 92C76 102 28 88 24 62Z"
+              fill="#fbf6ec"/>
+
+        <!-- 红斑（裁在身体里，所以怎么画都不会溢出来） -->
+        <g clip-path="url(#koiClip)">
+          <path d="M14 42C26 20 58 12 74 22C84 29 78 44 62 46C44 48 24 50 14 42Z" fill="#c1503a"/>
+          <path d="M88 18C104 12 128 20 136 32C140 40 130 46 118 44C104 42 92 30 88 18Z" fill="#c1503a" opacity=".85"/>
+        </g>
+
+        <!-- 轮廓 -->
+        <path d="M24 62C28 36 76 22 118 32C134 36 146 46 149 54L149 70C146 78 134 88 118 92C76 102 28 88 24 62Z"
+              fill="none" stroke="#3a352c" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/>
+
+        <!-- 背鳍 -->
+        <path d="M76 30C82 15 100 12 107 26C99 28 88 29 76 30Z"
+              fill="#f6e9df" stroke="#3a352c" stroke-width="1.4" stroke-linejoin="round"/>
+        <!-- 胸鳍 -->
+        <path d="M66 86C62 99 74 106 86 99C79 95 72 90 66 86Z"
+              fill="#f6e9df" stroke="#3a352c" stroke-width="1.4" stroke-linejoin="round"/>
+        <!-- 鳃 -->
+        <path d="M58 42C53 53 53 66 59 79" fill="none" stroke="#3a352c" stroke-width="1.1"
+              opacity=".2" stroke-linecap="round"/>
+        <!-- 须 -->
+        <g fill="none" stroke="#3a352c" stroke-width="1.15" opacity=".42" stroke-linecap="round">
+          <path d="M26 57C20 54 15 51 10 46"/>
+          <path d="M27 65C21 68 16 72 12 78"/>
+        </g>
+        <!-- 眼睛 -->
+        <circle cx="42" cy="54" r="3.5" fill="#3a352c"/>
+        <circle cx="43.3" cy="52.7" r="1.1" fill="#fff"/>
+      </svg>
+      <p class="koi-hint">（这条鱼可以戳，它不太怕人）</p>
+    </div>
+
+    <h1 class="title">小鲤</h1>
+    <p class="subtitle">生日快乐</p>
+  </header>
+
+  <article class="letter">
+    <p class="salutation">AOliAO：</p>
+
+    <p>生日快乐。</p>
+
+    <p>这四个字，我在输入框里打了删、删了打，好几遍。不是不知道说什么，是想说的太多——写长了吧，怕显得刻意；写短了吧，又觉得配不上「认真」这两个字。</p>
+
+    <!-- ✏️ 最重要的一处：换成你们之间真实的一件小事。
+         一起吃过的那家店、某次聊到很晚、她随口说过的一句什么话、一个只有你们懂的笑点……
+         换掉它，这封信就从"好看"变成"是你写的"。 -->
+    <p>说起来也没什么特别的由头，就是觉得，你这个人，值得被认真祝福一次。</p>
+
+    <p>新的一岁，我不祝你万事顺遂。那种话太假了，生活总有它自己的脾气。<br>我祝你的，都是些能落地的小事——</p>
+
+    <p class="wishes">
+      <span>难的事，能扛过去；</span>
+      <span>开心的事，能记很久；</span>
+      <span>想去的地方，能真的去成；</span>
+      <span>想吃的店，不用排太久的队。</span>
+    </p>
+
+    <p>（要是这些都能实现，这一年就已经很好了。）</p>
+
+    <p>蜡烛我替你点上了，就在下面。<br>许愿这种事，得你自己来。</p>
+  </article>
+
+  <div class="divider" aria-hidden="true">
+    <svg viewBox="0 0 300 44">
+      <path d="M2 30C32 24 62 36 92 30S152 24 182 30 242 36 298 28"
+            fill="none" stroke="#cbc1b1" stroke-width="1" stroke-linecap="round"/>
+      <g class="mini">
+        <g transform="translate(150,25)">
+          <path d="M0 0C5-4.5 13-4.5 17 0 13 4.5 5 4.5 0 0Z" fill="#c1503a"/>
+          <path d="M0 0L-7-4.6-5.6 0-7 4.6Z" fill="#c1503a"/>
+          <circle cx="13" cy="-1" r=".9" fill="#fbf6ec"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <section class="candle-block">
+    <p class="candle-hint" id="candleHint">蜡烛替你点好了 · 点一下，吹灭它</p>
+
+    <button class="candle-btn" id="candleBtn" type="button" aria-label="吹灭蜡烛">
+      <svg class="candle-svg" viewBox="0 0 120 180" aria-hidden="true">
+        <defs>
+          <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ffcf7a" stop-opacity=".75"/>
+            <stop offset="55%" stop-color="#ffb85e" stop-opacity=".2"/>
+            <stop offset="100%" stop-color="#ffb85e" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="waxGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#eadfc6"/>
+            <stop offset="45%" stop-color="#f9f2e2"/>
+            <stop offset="100%" stop-color="#e3d6bb"/>
+          </linearGradient>
+          <linearGradient id="flameGrad" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#e8892f"/>
+            <stop offset="50%" stop-color="#f7b93f"/>
+            <stop offset="100%" stop-color="#ffeaa6"/>
+          </linearGradient>
+        </defs>
+
+        <ellipse cx="60" cy="164" rx="30" ry="5" fill="#332f29" opacity=".07"/>
+        <circle class="glow" cx="60" cy="54" r="46" fill="url(#glowGrad)"/>
+
+        <!-- 蜡烛 -->
+        <rect x="48" y="76" width="24" height="86" rx="5" fill="url(#waxGrad)"/>
+        <ellipse cx="60" cy="76" rx="12" ry="4" fill="#fffaf0"/>
+        <path d="M48 94c-1 6-3 9-3 13 0 2 1 3 3 3" fill="none" stroke="#e8dcc3"
+              stroke-width="2" stroke-linecap="round"/>
+        <path d="M72 106c1 5 2 8 2 11 0 2-1 3-3 3" fill="none" stroke="#e8dcc3"
+              stroke-width="2" stroke-linecap="round"/>
+        <path d="M60 76V64" stroke="#332f29" stroke-width="1.8" stroke-linecap="round" opacity=".8"/>
+
+        <!-- 烟 -->
+        <path class="smoke" d="M60 60c-4-8 5-12 1-22" fill="none" stroke="#9b9186"
+              stroke-width="1.6" stroke-linecap="round"/>
+
+        <!-- 火焰 -->
+        <g class="flame">
+          <path d="M60 30c7 12 11 18 11 25 0 7-5 12-11 12s-11-5-11-12c0-7 4-13 11-25z" fill="url(#flameGrad)"/>
+          <path d="M60 46c3 6 5 9 5 13 0 4-2 6-5 6s-5-2-5-6c0-4 2-7 5-13z" fill="#fff4c9" opacity=".95"/>
+        </g>
+      </svg>
+    </button>
+
+    <p class="after" id="after">
+      许的愿，说出来就不灵了。<br>
+      <span>——那我这个，就先不说。</span>
+    </p>
+  </section>
+
+  <footer class="end">
+    <p class="end-line">书不尽意，余言后续。</p>
+    <!-- ✏️ 想落款就在下面这行加你的名字，比如：—— 雨航 -->
+    <p class="end-date">十月十二日，夜</p>
+    <div class="seal" aria-hidden="true"><span>生</span><span>日</span><span>快</span><span>乐</span></div>
+  </footer>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* 极轻的提示音，不需要任何音频文件 */
+  var ac = null;
+  function tone(freq, delay, dur){
+    try{
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return;
+      if(!ac) ac = new AC();
+      if(ac.state === "suspended") ac.resume();
+      var t0 = ac.currentTime + (delay || 0);
+      var osc = ac.createOscillator(), gain = ac.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.11, t0 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + (dur || 1.1));
+      osc.connect(gain);
+      gain.connect(ac.destination);
+      osc.start(t0);
+      osc.stop(t0 + (dur || 1.1) + 0.05);
+    }catch(e){/* 静音失败无所谓 */}
+  }
+
+  /* 戳锦鲤 */
+  var koi = document.getElementById("koi");
+  var busy = false;
+  function poke(){
+    if(busy) return;
+    busy = true;
+    koi.classList.add("happy");
+    tone(784, 0, 0.7);
+    tone(1175, 0.12, 0.9);
+    setTimeout(function(){
+      koi.classList.remove("happy");
+      busy = false;
+    }, 980);
+  }
+  koi.addEventListener("click", poke);
+  koi.addEventListener("keydown", function(e){
+    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); poke(); }
+  });
+
+  /* 吹蜡烛 */
+  var btn = document.getElementById("candleBtn");
+  var hint = document.getElementById("candleHint");
+  var after = document.getElementById("after");
+  btn.addEventListener("click", function(){
+    if(btn.classList.contains("out")) return;
+    btn.classList.add("out");
+    tone(587, 0, 0.5);
+    tone(880, 0.16, 1.3);
+    tone(1318, 0.32, 1.6);
+    hint.textContent = "生日快乐，小鲤。";
+    hint.style.color = "#6f675b";
+    setTimeout(function(){ after.classList.add("show"); }, 900);
+  });
+})();
+</script>
+</body>
+</html>
