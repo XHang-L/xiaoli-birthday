@@ -693,7 +693,7 @@ body{
   var oreoS   = document.getElementById("s1");
 
   /* ── 声音：全部现场合成，不需要任何音频文件 ── */
-  var ac = null, bus = null, muted = false;
+  var ac = null, bus = null, sfxGain = null, muted = false;
   function ctx() {
     try {
       if (!ac) {
@@ -703,6 +703,8 @@ body{
         var lp = ac.createBiquadFilter();
         lp.type = "lowpass"; lp.frequency.value = 3400;
         bus = ac.createGain(); bus.gain.value = muted ? 0 : 1;
+        // 音效单独走一路，压到生日歌底下，不抢戏
+        sfxGain = ac.createGain(); sfxGain.gain.value = 0.3; sfxGain.connect(bus);
         var dly = ac.createDelay(); dly.delayTime.value = 0.27;
         var fb = ac.createGain(); fb.gain.value = 0.26;
         var wet = ac.createGain(); wet.gain.value = 0.3;
@@ -723,7 +725,7 @@ body{
       g.gain.setValueAtTime(0.0001, t0);
       g.gain.exponentialRampToValueAtTime(vol || 0.055, t0 + 0.02);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + (dur || 0.8));
-      o.connect(g); g.connect(bus || a.destination);
+      o.connect(g); g.connect(sfxGain || a.destination);
       o.start(t0); o.stop(t0 + (dur || 0.8) + 0.05);
     } catch (e) {}
   }
@@ -741,22 +743,24 @@ body{
       var g = a.createGain();
       g.gain.setValueAtTime(vol || 0.04, t0);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-      src.connect(bp); bp.connect(g); g.connect(bus || a.destination);
+      src.connect(bp); bp.connect(g); g.connect(sfxGain || a.destination);
       src.start(t0);
     } catch (e) {}
   }
 
-  /* ── 背景音乐：现场合成的音乐盒，一小段循环 ── */
+  /* ── 背景音乐：现场弹的《生日快乐》，音乐盒音色，慢慢地 ── */
   var music = (function () {
-    var CHORDS = [
-      { bass: 36, n: [60, 64, 67, 72] },   // C
-      { bass: 31, n: [59, 62, 67, 71] },   // G/B
-      { bass: 33, n: [57, 60, 64, 69] },   // Am
-      { bass: 29, n: [57, 60, 65, 69] }    // F
+    // [音高, 拍数]，C 大调 3/4 拍：Happy birthday to you...
+    var SONG = [
+      [67, .5], [67, .5], [69, 1], [67, 1], [72, 1], [71, 2],
+      [67, .5], [67, .5], [69, 1], [67, 1], [74, 1], [72, 2],
+      [67, .5], [67, .5], [79, 1], [76, 1], [72, 1], [71, 1], [69, 2],
+      [77, .5], [77, .5], [76, 1], [72, 1], [74, 1], [72, 3]
     ];
-    var PAT = [0, 1, 2, 3, 2, 3, 1, 2];
-    var STEP = 60 / 64 / 2;               // 八分音符
-    var on = false, timer = null, step = 0, nextT = 0;
+    // 乐句开头的低音（每句一个，撑住底盘）
+    var BASS = [{ at: 0, n: 48 }, { at: 6, n: 43 }, { at: 12, n: 48 }, { at: 19, n: 41 }];
+    var BEAT = 60 / 62;                   // 62 BPM，慢一点才温柔
+    var on = false, timer = null, i = 0, beat = 0, nextT = 0;
 
     function hz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
 
@@ -766,11 +770,11 @@ body{
       var g = a.createGain(), g2 = a.createGain();
       o1.type = "sine"; o1.frequency.value = f;
       o2.type = "triangle"; o2.frequency.value = f * 2.004;
-      g2.gain.value = 0.16;
+      g2.gain.value = 0.15;
       o2.connect(g2); g2.connect(g);
       o1.connect(g); g.connect(bus);
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(vol, t + 0.014);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.016);
       g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
       o1.start(t); o2.start(t);
       o1.stop(t + dur + 0.05); o2.stop(t + dur + 0.05);
@@ -778,22 +782,24 @@ body{
 
     function tick() {
       var a = ctx(); if (!a) return;
-      while (nextT < a.currentTime + 0.35) {
-        var c = CHORDS[Math.floor(step / 8) % CHORDS.length];
-        var k = step % 8;
-        if (k === 0) bell(hz(c.bass + 12), nextT, .048, 2.6);
-        if (k === 4) bell(hz(c.bass + 19), nextT, .026, 2.2);
-        bell(hz(c.n[PAT[k]] + (k >= 4 ? 12 : 0)), nextT, .03, 1.7);
-        nextT += STEP;
-        step++;
+      while (nextT < a.currentTime + 0.5) {
+        var n = SONG[i];
+        bell(hz(n[0]), nextT, .058, 1.1 + n[1] * BEAT);          // 主旋律
+        for (var b = 0; b < BASS.length; b++) {
+          if (BASS[b].at === beat) bell(hz(BASS[b].n), nextT, .042, 3.0);
+        }
+        nextT += n[1] * BEAT;
+        beat += n[1];
+        i++;
+        if (i >= SONG.length) { i = 0; beat = 0; nextT += BEAT; }  // 循环前空一拍
       }
-      timer = setTimeout(tick, 90);
+      timer = setTimeout(tick, 120);
     }
     return {
       start: function () {
         if (on) return;
         var a = ctx(); if (!a) return;
-        on = true; nextT = a.currentTime + 0.25; tick();
+        on = true; i = 0; beat = 0; nextT = a.currentTime + 0.3; tick();
       }
     };
   })();
@@ -803,7 +809,7 @@ body{
     var cv = document.getElementById("fx");
     if (!cv || !cv.getContext) return { rise: function () {}, form: function () {}, beat: function () {}, burst: function () {} };
     var cx = cv.getContext("2d");
-    var W = 0, H = 0, dpr = 1, raf = null, last = 0, tStart = 0, mode = "idle";
+    var W = 0, H = 0, dpr = 1, raf = null, last = 0, tStart = 0, mode = "idle", flash = 0;
     var hCx = 0, hCy = 0, hS = 100;
     var parts = [];
 
@@ -852,7 +858,15 @@ body{
         var ph = (el % 0.78) / 0.78;
         pulse = 1 + 0.08 * Math.exp(-ph * 9) * Math.cos(ph * 24);
       }
+      // 炸开那一瞬的中心闪光
+      if (flash > 0.012) {
+        var fs = 22 + 160 * (1 - flash);
+        cx.globalAlpha = Math.min(1, flash);
+        cx.drawImage(sprite, hCx - fs, hCy - fs, fs * 2, fs * 2);
+        flash *= 0.88;
+      }
       var drawn = 0;
+      cx.lineCap = "round";
       for (var i = 0; i < parts.length; i++) {
         var p = parts[i];
         if (mode === "rise") {
@@ -866,15 +880,22 @@ body{
           p.y += (hCy + p.oy * hS * pulse - p.y) * k * dt;
           if (p.a < .95) p.a += .02 * dt;
         } else if (mode === "burst") {
-          p.vy += 0.05 * dt;
-          p.vx *= 0.994; p.vy *= 0.994;
+          p.px = p.x; p.py = p.y;
+          p.vy += 0.032 * dt;                 // 重力：先冲出去，再垂下来
+          p.vx *= 0.962; p.vy *= 0.962;       // 空气阻力
           p.x += p.vx * dt; p.y += p.vy * dt;
-          p.a -= 0.0035 * dt;
+          p.a -= 0.0026 * dt;
+          if (p.a > 0.03) {                   // 拖尾，烟花那味儿
+            cx.globalAlpha = Math.min(1, p.a) * 0.4;
+            cx.strokeStyle = "rgba(255,214,142,1)";
+            cx.lineWidth = Math.max(0.7, p.s * 0.4);
+            cx.beginPath(); cx.moveTo(p.px, p.py); cx.lineTo(p.x, p.y); cx.stroke();
+          }
         }
         if (p.a <= 0) continue;
         var s = p.s * (mode === "beat" ? pulse : 1);
         drawn++;
-        cx.globalAlpha = p.a > 1 ? 1 : p.a;
+        cx.globalAlpha = Math.min(1, p.a);
         cx.drawImage(sprite, p.x - s, p.y - s, s * 2, s * 2);
       }
       cx.globalAlpha = 1;
@@ -913,12 +934,18 @@ body{
       },
       beat: function () { mode = "beat"; start(); },
       burst: function () {
+        // 沿着心的半径朝外炸开 → 心"哗"地散成烟花，再垂下来变金雨
         for (var i = 0; i < parts.length; i++) {
           var p = parts[i];
-          p.vx = p.ox * 0.075 + (Math.random() - .5) * 2.2;
-          p.vy = p.oy * 0.075 - 1.4 - Math.random() * 1.6;
-          p.a = 0.95;
+          var ang = Math.atan2(p.oy, p.ox);
+          if (!isFinite(ang)) ang = Math.random() * 6.283;
+          var sp = 2.6 + Math.random() * 5.4;
+          p.vx = Math.cos(ang) * sp;
+          p.vy = Math.sin(ang) * sp - 1.1;
+          p.px = p.x; p.py = p.y;
+          p.a = 0.98;
         }
+        flash = 1;
         mode = "burst"; start();
       }
     };
@@ -978,6 +1005,7 @@ body{
   ];
   var queue = [], pending = null, timer = null;
   var canBlow = false, blown = false;
+  var canPop = false, popped = false, popTimer = null;
 
   function arm() {
     if (!queue.length) return;
@@ -1019,13 +1047,26 @@ body{
     setTimeout(function () { FX.beat(); tone(196, .5, 0, .05); tone(147, .6, .28, .04); }, 4800);
     setTimeout(function () { tone(196, .4, 0, .045); tone(147, .5, .24, .035); }, 5580);
     setTimeout(function () { tone(196, .4, 0, .045); tone(147, .5, .24, .035); }, 6460);
-    setTimeout(function () {                             // 心跳够了，炸成金雨
-      FX.burst();
-      noise(.9, 0, .06, 1300);
-      tone(784, 1.4, 0, .05);
-      tone(1175, 1.6, .1, .04);
-      tone(1568, 1.8, .2, .032);
-    }, 7300);
+    // 心在那儿跳着等她来戳；戳了就是烟花，一直不戳它也会自己炸
+    setTimeout(function () {
+      if (popped) return;
+      canPop = true;
+      showHint("come baby", true);
+    }, 6700);
+    popTimer = setTimeout(pop, 17500);
+  }
+
+  /* ── 戳心：炸成烟花 ── */
+  function pop() {
+    if (popped) return;
+    popped = true; canPop = false;
+    clearTimeout(popTimer);
+    hint.classList.remove("show");
+    FX.burst();
+    noise(.75, 0, .05, 1400);
+    tone(880, 1.2, 0, .045);
+    tone(1318, 1.5, .08, .038);
+    tone(1760, 1.8, .16, .03);
   }
 
   /* ── 点击 / 键盘 ── */
@@ -1048,6 +1089,10 @@ body{
       if (blown) return;
       if (canBlow) { blowOut(); return; }
       if (queue.length || pending) fire();      // 还在演 → 加速到下一步
+      return;
+    }
+    if (cur === 2) {
+      if (canPop && !popped) pop();             // 戳心 → 烟花
       return;
     }
   }
