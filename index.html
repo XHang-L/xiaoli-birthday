@@ -282,6 +282,15 @@ body{
 }
 .end-wrap{position:absolute;inset:0;display:grid;place-content:center;
   padding:0 30px;text-align:center;z-index:3}
+/* 烟花落尽之后，开场那条小鱼游回来 */
+.back-koi{position:absolute;left:50%;bottom:8%;width:min(50vw,205px);height:auto;
+  opacity:0;pointer-events:none;transform:translateX(-50%);z-index:2}
+.back-koi.in{animation:koiBack 3.6s cubic-bezier(.3,.75,.35,1) forwards}
+@keyframes koiBack{
+  0%{opacity:0;transform:translateX(-50%) translateX(-150%) translateY(16px) rotate(-5deg)}
+  16%{opacity:.88}
+  100%{opacity:.88;transform:translateX(-50%) translateX(0) translateY(0) rotate(0)}
+}
 .end-wrap p{margin:0}
 .l1{font-size:clamp(15px,4.2vw,17.5px);line-height:2;letter-spacing:.06em;color:var(--cream-2)}
 .l1 + .l1{margin-top:.15em}
@@ -666,6 +675,52 @@ body{
       <i style="--x:36%;--d:11s;--t:16s;--s:2px"></i>
     </div>
 
+    <!-- 开场那条小鱼，烟花放完游回来 -->
+    <svg class="back-koi" id="backKoi" viewBox="0 0 300 230" aria-hidden="true">
+      <defs>
+        <radialGradient id="koiGlow2" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#f6dfc0" stop-opacity=".22"/>
+          <stop offset="100%" stop-color="#f6dfc0" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="koiBody2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fffaf0"/>
+          <stop offset="55%" stop-color="#f7ead4"/>
+          <stop offset="100%" stop-color="#e3cdaf"/>
+        </linearGradient>
+        <linearGradient id="koiFin2" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#fdf2df" stop-opacity=".9"/>
+          <stop offset="100%" stop-color="#e8cdaa" stop-opacity=".62"/>
+        </linearGradient>
+        <clipPath id="koiClip2">
+          <path d="M66 96C70 74 108 62 144 67C168 70 186 82 194 96
+                   C186 110 168 122 144 125C108 130 70 118 66 96Z"/>
+        </clipPath>
+      </defs>
+      <g class="koi-bob">
+        <ellipse cx="150" cy="96" rx="118" ry="76" fill="url(#koiGlow2)"/>
+        <g class="tail">
+          <path d="M190 96C206 80 226 66 246 56C238 74 234 86 234 96
+                   C234 106 238 118 246 136C226 126 206 112 190 96Z" fill="url(#koiFin2)"/>
+        </g>
+        <path class="fin" d="M110 68C120 48 142 41 158 51C138 54 122 60 110 68Z" fill="url(#koiFin2)"/>
+        <path d="M106 118C98 138 116 150 138 140C122 134 112 127 106 118Z" fill="url(#koiFin2)"/>
+        <path d="M66 96C70 74 108 62 144 67C168 70 186 82 194 96
+                 C186 110 168 122 144 125C108 130 70 118 66 96Z" fill="url(#koiBody2)"/>
+        <g clip-path="url(#koiClip2)">
+          <path d="M54 76C68 52 104 42 124 54C136 62 128 80 108 82C86 84 62 86 54 76Z" fill="#d4553c"/>
+          <path d="M140 52C160 44 188 54 196 68C200 78 188 86 174 82C158 78 144 64 140 52Z" fill="#d4553c" opacity=".9"/>
+        </g>
+        <path d="M110 74C104 86 104 106 112 120" fill="none" stroke="#c9ac86" stroke-width="1.8"
+              opacity=".45" stroke-linecap="round"/>
+        <circle cx="90" cy="88" r="4.6" fill="#123040"/>
+        <circle cx="91.6" cy="86.4" r="1.5" fill="#fff"/>
+        <g fill="none" stroke="#e8d6b8" stroke-width="1.6" opacity=".5" stroke-linecap="round">
+          <path d="M68 90C58 86 50 82 42 74"/>
+          <path d="M69 102C59 106 51 111 44 118"/>
+        </g>
+      </g>
+    </svg>
+
     <div class="end-wrap">
       <p class="l1" data-text="认识你之后，"></p>
       <p class="l1" data-text="很多普通的日子都变得挺值得期待的"></p>
@@ -813,16 +868,26 @@ body{
     var hCx = 0, hCy = 0, hS = 100;
     var parts = [];
 
-    var sprite = document.createElement("canvas");
-    sprite.width = sprite.height = 32;
-    (function () {
-      var s = sprite.getContext("2d");
+    // 三种颜色的光点：金、橙红、白蓝，放起来才像烟花
+    function makeSprite(a, b) {
+      var c = document.createElement("canvas");
+      c.width = c.height = 32;
+      var s = c.getContext("2d");
       var g = s.createRadialGradient(16, 16, 0, 16, 16, 16);
-      g.addColorStop(0, "rgba(255,246,220,1)");
-      g.addColorStop(.34, "rgba(255,214,142,.8)");
-      g.addColorStop(1, "rgba(255,186,84,0)");
+      g.addColorStop(0, "rgba(" + a + ",1)");
+      g.addColorStop(.32, "rgba(" + b + ",.78)");
+      g.addColorStop(1, "rgba(" + b + ",0)");
       s.fillStyle = g; s.fillRect(0, 0, 32, 32);
-    })();
+      return c;
+    }
+    var SPR = [
+      makeSprite("255,246,220", "255,196,110"),
+      makeSprite("255,240,218", "255,138,70"),
+      makeSprite("255,255,255", "196,224,255")
+    ];
+    var STROKE = ["255,206,120", "255,150,80", "214,236,255"];
+    var rings = [];
+    function addRing(x, y, ci) { rings.push({ x: x, y: y, r: 4, a: .9, c: ci || 0 }); }
 
     function resize() {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -838,6 +903,19 @@ body{
         x: 16 * Math.pow(Math.sin(t), 3),
         y: -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t))
       };
+    }
+    function firework(x, y, ci) {
+      addRing(x, y, ci);
+      for (var i = 0; i < 120; i++) {
+        var ang = (i / 120) * 6.283 + Math.random() * 0.13;
+        var sp = 2.4 + Math.random() * 6.4;
+        parts.push({
+          x: x, y: y, px: x, py: y,
+          vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 0.6,
+          ox: 0, oy: 0, s: 2 + Math.random() * 4.4, a: 0.98,
+          seed: Math.random() * 6.28, c: ci
+        });
+      }
     }
     function start() {
       if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -858,12 +936,23 @@ body{
         var ph = (el % 0.78) / 0.78;
         pulse = 1 + 0.08 * Math.exp(-ph * 9) * Math.cos(ph * 24);
       }
+      // 冲击波圆环
+      for (var ri = rings.length - 1; ri >= 0; ri--) {
+        var rg = rings[ri];
+        rg.r += 5.8 * dt; rg.a -= 0.023 * dt;
+        if (rg.a <= 0) { rings.splice(ri, 1); continue; }
+        cx.globalAlpha = rg.a * .95;
+        cx.strokeStyle = "rgba(" + STROKE[rg.c] + ",1)";
+        cx.lineWidth = 3;
+        cx.beginPath(); cx.arc(rg.x, rg.y, rg.r, 0, 6.283); cx.stroke();
+      }
+      cx.globalAlpha = 1;
       // 炸开那一瞬的中心闪光
       if (flash > 0.012) {
-        var fs = 22 + 160 * (1 - flash);
+        var fs = 22 + 170 * (1 - flash);
         cx.globalAlpha = Math.min(1, flash);
-        cx.drawImage(sprite, hCx - fs, hCy - fs, fs * 2, fs * 2);
-        flash *= 0.88;
+        cx.drawImage(SPR[0], hCx - fs, hCy - fs, fs * 2, fs * 2);
+        flash *= 0.87;
       }
       var drawn = 0;
       cx.lineCap = "round";
@@ -884,11 +973,11 @@ body{
           p.vy += 0.032 * dt;                 // 重力：先冲出去，再垂下来
           p.vx *= 0.962; p.vy *= 0.962;       // 空气阻力
           p.x += p.vx * dt; p.y += p.vy * dt;
-          p.a -= 0.0026 * dt;
+          p.a -= 0.0024 * dt;
           if (p.a > 0.03) {                   // 拖尾，烟花那味儿
-            cx.globalAlpha = Math.min(1, p.a) * 0.4;
-            cx.strokeStyle = "rgba(255,214,142,1)";
-            cx.lineWidth = Math.max(0.7, p.s * 0.4);
+            cx.globalAlpha = Math.min(1, p.a) * 0.5;
+            cx.strokeStyle = "rgba(" + STROKE[p.c || 0] + ",1)";
+            cx.lineWidth = Math.max(0.9, p.s * 0.45);
             cx.beginPath(); cx.moveTo(p.px, p.py); cx.lineTo(p.x, p.y); cx.stroke();
           }
         }
@@ -896,7 +985,7 @@ body{
         var s = p.s * (mode === "beat" ? pulse : 1);
         drawn++;
         cx.globalAlpha = Math.min(1, p.a);
-        cx.drawImage(sprite, p.x - s, p.y - s, s * 2, s * 2);
+        cx.drawImage(SPR[p.c || 0], p.x - s, p.y - s, s * 2, s * 2);
       }
       cx.globalAlpha = 1;
       cx.globalCompositeOperation = "source-over";
@@ -910,7 +999,7 @@ body{
     return {
       rise: function (x, y) {
         resize();
-        parts = [];
+        parts = []; rings = [];
         for (var i = 0; i < 300; i++) {
           parts.push({
             x: x + (Math.random() - .5) * 24, y: y + (Math.random() - .5) * 18,
@@ -933,20 +1022,38 @@ body{
         mode = "form"; start();
       },
       beat: function () { mode = "beat"; start(); },
-      burst: function () {
-        // 沿着心的半径朝外炸开 → 心"哗"地散成烟花，再垂下来变金雨
+      burst: function (cb) {
+        // 1) 心'哗'地沿着半径炸开
         for (var i = 0; i < parts.length; i++) {
           var p = parts[i];
           var ang = Math.atan2(p.oy, p.ox);
           if (!isFinite(ang)) ang = Math.random() * 6.283;
-          var sp = 2.6 + Math.random() * 5.4;
+          var sp = 3.4 + Math.random() * 6.6;
           p.vx = Math.cos(ang) * sp;
           p.vy = Math.sin(ang) * sp - 1.1;
           p.px = p.x; p.py = p.y;
-          p.a = 0.98;
+          p.a = 0.99;
+          if (p.c === undefined) p.c = 0;
         }
+        addRing(hCx, hCy, 0);
         flash = 1;
         mode = "burst"; start();
+
+        // 2) 四周再接二连三放几朵，一朵比一朵高
+        var spots = [
+          [W * 0.21, H * 0.30, 170, 1], [W * 0.79, H * 0.25, 380, 2],
+          [W * 0.31, H * 0.53, 640, 0], [W * 0.71, H * 0.50, 910, 1],
+          [W * 0.50, H * 0.15, 1180, 2], [W * 0.13, H * 0.63, 1420, 0]
+        ];
+        for (var k = 0; k < spots.length; k++) {
+          (function (sp) {
+            setTimeout(function () {
+              if (mode !== "burst") return;
+              firework(sp[0], sp[1], sp[3]);
+              if (cb) cb(sp[3]);
+            }, sp[2]);
+          })(spots[k]);
+        }
       }
     };
   })();
@@ -1056,17 +1163,30 @@ body{
     popTimer = setTimeout(pop, 17500);
   }
 
-  /* ── 戳心：炸成烟花 ── */
+  /* ── 戳心：心炸开，接着连放几朵 ── */
   function pop() {
     if (popped) return;
     popped = true; canPop = false;
     clearTimeout(popTimer);
     hint.classList.remove("show");
-    FX.burst();
+    FX.burst(function (ci) {                       // 每放一朵，跟一声
+      noise(.3, 0, .04, 1700 + ci * 320);
+      tone(1100 + ci * 190, .45, 0, .024);
+    });
     noise(.75, 0, .05, 1400);
     tone(880, 1.2, 0, .045);
     tone(1318, 1.5, .08, .038);
     tone(1760, 1.8, .16, .03);
+    setTimeout(koiBack, 5200);                     // 烟花落尽，小鱼游回来
+  }
+
+  function koiBack() {
+    var k = document.getElementById("backKoi");
+    if (!k || k.classList.contains("in")) return;
+    k.classList.add("in");
+    tone(587, 1.0, 0, .032);
+    tone(784, 1.2, .2, .028);
+    tone(1046, 1.4, .42, .024);
   }
 
   /* ── 点击 / 键盘 ── */
