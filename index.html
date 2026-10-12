@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!--
   · 生日动画页 · 单文件、零外部依赖、手机优先
-  · 点屏幕 / 空格 → 下一幕；奥利奥三连播放中，点一下 = 加速到下一步
-  · 想改文字：搜 ✏️。字越少越好。
+  · 点屏幕 / 空格 → 推进；奥利奥那段自动播，手快可以点一下加速；最后一下是吹蜡烛
+  · 想改文字：搜 ✏️
 -->
 <html lang="zh-CN">
 <head>
@@ -14,7 +14,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="description" content="生日快乐">
 <title>生日快乐</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%232a1b12'/%3E%3Ccircle cx='32' cy='32' r='25' fill='%233c2617'/%3E%3Ccircle cx='32' cy='26' r='6' fill='%23e9c79a' opacity='.5'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='34' r='26' fill='%233c2617'/%3E%3Crect x='27' y='6' width='10' height='22' rx='3' fill='%23f7efdd'/%3E%3Cpath d='M32 6c3 5 5 7 5 10a5 5 0 0 1-10 0c0-3 2-5 5-10z' fill='%23f7b93f'/%3E%3C/svg%3E">
 <style>
 :root{
   --cream:#f7efdf;
@@ -51,21 +51,23 @@ body{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E");
 }
 
-/* ── 幕 ─────────────────────────────── */
+/* ── 幕：进出都带一点推拉，衔接更顺 ── */
 .scene{
   position:absolute;inset:0;display:grid;place-items:center;
-  opacity:0;visibility:hidden;transition:opacity .8s ease,visibility .8s;
+  opacity:0;visibility:hidden;transform:scale(1.055);
+  transition:opacity .9s ease,transform 1.25s cubic-bezier(.2,.8,.3,1),visibility .9s;
 }
-.scene.on{opacity:1;visibility:visible}
+.scene.on{opacity:1;visibility:visible;transform:scale(1)}
+.scene.leaving{opacity:0;transform:scale(.955);
+  transition:opacity .9s ease,transform 1.1s cubic-bezier(.4,0,.6,1)}
 .scene svg{display:block;overflow:visible}
 
 /* ══ 第一幕：小锦鲤 ══ */
 .koi-svg{width:min(82vw,390px);height:auto}
 .koi-track{animation:swimIn 2.6s cubic-bezier(.25,.7,.35,1)}
-@keyframes swimIn{
-  from{transform:translateX(-340px) rotate(-6deg)}
-  to{transform:translateX(0) rotate(0)}
-}
+@keyframes swimIn{from{transform:translateX(-340px) rotate(-6deg)}to{transform:translateX(0) rotate(0)}}
+.scene.leaving .koi-track{transform:translateX(150px) rotate(4deg);
+  transition:transform 1.05s cubic-bezier(.4,0,.6,1)}
 .koi-bob{animation:bob 5s ease-in-out 2.6s infinite}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.4deg)}50%{transform:translateY(-12px) rotate(1.6deg)}}
 .tail{transform-box:view-box;transform-origin:190px 96px;animation:wag 2.7s ease-in-out infinite}
@@ -74,6 +76,14 @@ body{
 @keyframes finWag{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(5deg)}}
 .sea{animation:seaDrift 9s ease-in-out infinite alternate}
 @keyframes seaDrift{from{transform:translateX(-6px)}to{transform:translateX(10px)}}
+/* 水里的光柱 */
+.ray{transform-box:view-box;transform-origin:50% 0;animation:raySway 12s ease-in-out infinite alternate}
+.ray.r2{animation-duration:15s;animation-delay:-4s}
+.ray.r3{animation-duration:17s;animation-delay:-8s}
+@keyframes raySway{
+  0%{transform:translateX(-9px) skewX(-4deg);opacity:.35}
+  100%{transform:translateX(11px) skewX(4deg);opacity:.75}
+}
 .bub{opacity:0;animation:bubUp 4.4s ease-in infinite}
 @keyframes bubUp{
   0%{transform:translateY(24px) scale(.5);opacity:0}
@@ -90,12 +100,9 @@ body{
 }
 
 /* ══ 第二幕：奥利奥 ══ */
-.oreo{width:min(80vw,340px);height:auto;max-height:72vh}
+.oreo{width:min(80vw,340px);height:auto;max-height:74vh}
 .oreo-in{animation:oreoIn 1.1s cubic-bezier(.2,.9,.3,1.05)}
-@keyframes oreoIn{
-  from{transform:translateY(64px) scale(.84);opacity:0}
-  to{transform:translateY(0) scale(1);opacity:1}
-}
+@keyframes oreoIn{from{transform:translateY(64px) scale(.84);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
 .floaty{animation:floaty 6.5s ease-in-out 1.1s infinite}
 @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 
@@ -119,11 +126,7 @@ body{
   100%{transform:translate(48px,-88px) scale(1.05)}
 }
 .twisted .thread{animation:threadGo 1.1s ease-out .4s forwards}
-@keyframes threadGo{
-  0%{opacity:0;transform:scaleY(.2)}
-  25%{opacity:.8}
-  100%{opacity:0;transform:scaleY(2.2)}
-}
+@keyframes threadGo{0%{opacity:0;transform:scaleY(.2)}25%{opacity:.8}100%{opacity:0;transform:scaleY(2.2)}}
 /* 舔一舔 */
 .lick-grow{transform-box:view-box;transform-origin:-260px 40px}
 .lick-sweep{transform-box:view-box;transform-origin:0 0}
@@ -141,11 +144,11 @@ body{
 .smear{opacity:0}
 .licked .smear{animation:smearOut 1.5s ease-out .8s forwards}
 @keyframes smearOut{0%{opacity:.5}100%{opacity:0}}
+
 /* 泡一泡 */
 .milk-back,.milk-front{opacity:0}
 .poured .milk-back,.poured .milk-front{animation:milkIn 1s cubic-bezier(.25,.8,.4,1) forwards}
 @keyframes milkIn{from{opacity:0;transform:translateY(96px)}to{opacity:1;transform:translateY(0)}}
-/* 掰开的那半片飘走，只把带奶油的一半泡进牛奶 */
 .poured .top-lift{animation:topAway 1.5s cubic-bezier(.4,0,.6,1) .25s forwards}
 @keyframes topAway{
   from{opacity:1;transform:translate(48px,-88px) scale(1.05)}
@@ -187,22 +190,73 @@ body{
 .ripple-m{transform-box:fill-box;transform-origin:center;opacity:0}
 .dunked .ripple-m{animation:ringOut 2.8s ease-out infinite}
 .dunked .ripple-m.b{animation-delay:.8s}
+.risen .mbub,.risen .ripple-m{animation:none;opacity:0}
+/* 浮起来：饼干从牛奶里升上来，还滴着奶 */
+.risen .bot-dive{animation:botRise 1.5s cubic-bezier(.3,.75,.4,1) forwards}
+@keyframes botRise{from{transform:translateY(212px)}to{transform:translateY(92px)}}
+.drip{opacity:0}
+.risen .drip{animation:dripFall 1.3s ease-in forwards}
+@keyframes dripFall{
+  0%{opacity:0;transform:translateY(0) scale(.5)}
+  25%{opacity:.85;transform:translateY(6px) scale(1)}
+  100%{opacity:0;transform:translateY(74px) scale(.7)}
+}
+.risen .drip.p2{animation-delay:.35s}.risen .drip.p3{animation-delay:.6s}
 
-/* 三步小标签 */
+/* 蜡烛 —— 生日的那一下 */
+.candle-g{opacity:0;transform-box:view-box;transform-origin:160px 252px}
+.candled .candle-g{animation:candleUp 1s cubic-bezier(.2,.9,.3,1.12) forwards}
+@keyframes candleUp{
+  from{opacity:0;transform:translateY(30px) scale(.55)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.flame{transform-box:fill-box;transform-origin:50% 100%;opacity:0;
+  transition:opacity .45s ease,transform .45s ease}
+.candled .flame{opacity:1;transition-delay:.6s}
+.flick{animation:flick 1.5s ease-in-out infinite}
+@keyframes flick{
+  0%,100%{transform:scale(1,1) translateY(0)}
+  32%{transform:scale(.95,1.08) translateY(-1px)}
+  68%{transform:scale(1.04,.96) translateY(1px)}
+}
+.cglow{opacity:0;transition:opacity .9s ease}
+.candled .cglow{opacity:1;transition-delay:.6s;animation:pulse 3.4s ease-in-out infinite}
+.blown .flame{animation:none;opacity:0;transform:scale(.28,.06) translateY(9px)}
+.blown .cglow{animation:none;opacity:0;transition-delay:0s}
+.smoke{opacity:0}
+.blown .smoke{animation:smokeUp 2.6s ease-out .05s forwards}
+@keyframes smokeUp{
+  0%{opacity:0;transform:translateY(6px) scale(.7)}
+  22%{opacity:.6}
+  100%{opacity:0;transform:translateY(-52px) scale(1.5)}
+}
+.spark{opacity:0}
+.blown .spark{animation:sparkOut 1.2s ease-out forwards}
+@keyframes sparkOut{
+  0%{opacity:0;transform:translate(0,0) scale(.4)}
+  14%{opacity:.95}
+  100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.6)}
+}
+.blown .spark.s2{animation-delay:.06s}.blown .spark.s3{animation-delay:.11s}
+.blown .spark.s4{animation-delay:.04s}.blown .spark.s5{animation-delay:.14s}
+.blown .spark.s6{animation-delay:.09s}.blown .spark.s7{animation-delay:.17s}
+
+/* 顶部四步小标签 */
 .steps{position:absolute;left:0;right:0;top:calc(20px + env(safe-area-inset-top));
-  display:flex;justify-content:center;gap:16px;z-index:4;pointer-events:none;
-  font-family:var(--sans);font-size:13px;letter-spacing:.24em;text-indent:.24em}
-.steps span{opacity:.14;transition:opacity .7s ease;color:var(--cream)}
-.twisted .steps .s1{opacity:.92}
-.licked .steps .s2{opacity:.92}
-.poured .steps .s3{opacity:.92}
-.licked .steps .s1,.poured .steps .s1,.poured .steps .s2{opacity:.34}
+  display:flex;justify-content:center;gap:14px;z-index:4;pointer-events:none;
+  font-family:var(--sans);font-size:13px;letter-spacing:.2em;text-indent:.2em}
+.steps span{opacity:.14;transition:opacity .8s ease,color .8s ease}
+.twisted .steps .s1{opacity:.9}
+.licked .steps .s2{opacity:.9}
+.poured .steps .s3{opacity:.9}
+.licked .steps .s1,.poured .steps .s1,.poured .steps .s2{opacity:.32}
+.blown .steps .s4{opacity:1;color:var(--gold)}
+.blown .steps .s1,.blown .steps .s2,.blown .steps .s3{opacity:.32}
 
 /* ══ 第三幕：结语 ══ */
 .halo{position:absolute;left:50%;top:50%;width:150vw;height:150vw;transform:translate(-50%,-50%);
-  pointer-events:none;
-  background:radial-gradient(circle,rgba(240,201,138,.1),rgba(240,201,138,0) 52%)}
-.motes{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  pointer-events:none;background:radial-gradient(circle,rgba(240,201,138,.11),rgba(240,201,138,0) 52%)}
+.motes,.confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .motes i{position:absolute;bottom:-24px;left:var(--x);width:var(--s);height:var(--s);
   border-radius:50%;opacity:0;
   background:radial-gradient(circle,rgba(255,242,214,.95),rgba(255,242,214,0) 70%);
@@ -213,6 +267,19 @@ body{
   86%{opacity:.45}
   100%{transform:translateY(-92vh) scale(1.15);opacity:0}
 }
+/* 金色纸屑：慢慢飘下来 */
+.confetti i{position:absolute;top:-16px;left:var(--x);width:5px;height:8px;border-radius:1.5px;
+  opacity:0;background:linear-gradient(180deg,#f7dfae,#d8a765);
+  animation:fall var(--t) linear var(--d) infinite}
+.confetti i:nth-child(3n){width:4px;height:4px;border-radius:50%;background:#f3e6cc}
+.confetti i:nth-child(4n){background:linear-gradient(180deg,#e8a98f,#c1503a)}
+@keyframes fall{
+  0%{transform:translate(0,0) rotate(0);opacity:0}
+  10%{opacity:.5}
+  52%{transform:translate(16px,52vh) rotate(210deg)}
+  82%{opacity:.32}
+  100%{transform:translate(-10px,106vh) rotate(430deg);opacity:0}
+}
 .end-wrap{position:absolute;inset:0;display:grid;place-content:center;
   padding:0 30px;text-align:center;z-index:3}
 .end-wrap p{margin:0}
@@ -220,8 +287,8 @@ body{
 .l1 + .l1{margin-top:.15em}
 .l2{font-family:var(--kai);font-size:clamp(20px,5.6vw,26px);line-height:1.85;letter-spacing:.1em;
   color:#fdf6e8;text-shadow:0 0 34px rgba(240,201,138,.34)}
+/* ✏️ 结尾文案在这几句的 data-text 里改 */
 .l2.gap{margin-top:1.5em}
-/* ✏️ 结尾文字改这里（改完跟着改上面的 data-text 就行） */
 .c{display:inline-block;opacity:0;transform:translateY(16px) scale(.96);
   transition:opacity .85s ease,transform .85s cubic-bezier(.2,.8,.3,1);
   transition-delay:calc(var(--i) * 52ms)}
@@ -236,15 +303,21 @@ body{
 #hint{position:absolute;left:50%;bottom:calc(50px + env(safe-area-inset-bottom));
   transform:translateX(-50%);display:flex;align-items:center;gap:9px;z-index:6;
   font-family:var(--sans);font-size:12.5px;letter-spacing:.26em;text-indent:.26em;
-  color:rgba(247,239,223,.46);opacity:0;transition:opacity .8s;pointer-events:none}
+  color:rgba(247,239,223,.5);opacity:0;transition:opacity .8s;pointer-events:none}
 #hint.show{opacity:1}
 #hint b{width:6px;height:6px;border-radius:50%;background:rgba(240,201,138,.95);
   text-indent:0;animation:beat 2.1s ease-in-out infinite}
 @keyframes beat{0%,100%{transform:scale(.8);opacity:.6}50%{transform:scale(1.25);opacity:1}}
+/* 点一下：柔和的光晕 + 一圈涟漪，让换幕不那么硬 */
+.bloom{position:fixed;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;
+  pointer-events:none;z-index:19;
+  background:radial-gradient(circle,rgba(255,238,198,.42),rgba(255,238,198,0) 70%);
+  animation:bloomOut 1.15s cubic-bezier(.2,.7,.4,1) forwards}
+@keyframes bloomOut{from{transform:scale(.25);opacity:.95}to{transform:scale(26);opacity:0}}
 .tap-ring{position:fixed;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;
-  border:1.5px solid rgba(240,201,138,.7);pointer-events:none;z-index:20;
-  animation:tapRing .85s ease-out forwards}
-@keyframes tapRing{from{transform:scale(.5);opacity:.9}to{transform:scale(30);opacity:0}}
+  border:1.5px solid rgba(240,201,138,.6);pointer-events:none;z-index:20;
+  animation:tapRing .9s ease-out forwards}
+@keyframes tapRing{from{transform:scale(.5);opacity:.85}to{transform:scale(30);opacity:0}}
 
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.02s!important;animation-iteration-count:1!important}
@@ -274,11 +347,31 @@ body{
           <stop offset="0%" stop-color="#fdf2df" stop-opacity=".9"/>
           <stop offset="100%" stop-color="#e8cdaa" stop-opacity=".62"/>
         </linearGradient>
+        <linearGradient id="rayG" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#ffeecd" stop-opacity="0"/>
+          <stop offset="50%" stop-color="#ffeecd" stop-opacity=".36"/>
+          <stop offset="100%" stop-color="#ffeecd" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="rayFadeG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff" stop-opacity=".85"/>
+          <stop offset="55%" stop-color="#fff" stop-opacity=".22"/>
+          <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+        </linearGradient>
+        <mask id="rayMask" maskUnits="userSpaceOnUse" x="0" y="-20" width="300" height="270">
+          <rect x="0" y="-20" width="300" height="270" fill="url(#rayFadeG)"/>
+        </mask>
         <clipPath id="koiClip">
           <path d="M66 96C70 74 108 62 144 67C168 70 186 82 194 96
                    C186 110 168 122 144 125C108 130 70 118 66 96Z"/>
         </clipPath>
       </defs>
+
+      <!-- 水里的光柱（左右和上下都用渐变+遮罩软化，不然会变成灰栅栏） -->
+      <g mask="url(#rayMask)" fill="url(#rayG)">
+        <path class="ray r1" d="M74 -20L116 -20L86 250L50 250Z"/>
+        <path class="ray r2" d="M166 -20L198 -20L190 250L156 250Z"/>
+        <path class="ray r3" d="M230 -20L254 -20L248 250L222 250Z"/>
+      </g>
 
       <g class="sea" fill="none" stroke="#7ebace" stroke-linecap="round" opacity=".2">
         <path d="M6 172C46 164 86 180 126 172S206 162 292 172" stroke-width="1.2"/>
@@ -293,7 +386,6 @@ body{
         <g class="koi-bob">
           <ellipse cx="150" cy="96" rx="118" ry="76" fill="url(#koiGlow)"/>
 
-          <!-- 鳍和尾巴压在下层，接缝被身体盖住 -->
           <g class="tail">
             <path d="M190 96C206 80 226 66 246 56C238 74 234 86 234 96
                      C234 106 238 118 246 136C226 126 206 112 190 96Z" fill="url(#koiFin)"/>
@@ -301,7 +393,6 @@ body{
           <path class="fin" d="M110 68C120 48 142 41 158 51C138 54 122 60 110 68Z" fill="url(#koiFin)"/>
           <path d="M106 118C98 138 116 150 138 140C122 134 112 127 106 118Z" fill="url(#koiFin)"/>
 
-          <!-- 身体 -->
           <path d="M66 96C70 74 108 62 144 67C168 70 186 82 194 96
                    C186 110 168 122 144 125C108 130 70 118 66 96Z" fill="url(#koiBody)"/>
           <g clip-path="url(#koiClip)">
@@ -324,15 +415,20 @@ body{
         <circle class="bub" cx="98" cy="162" r="2.4" style="animation-delay:1.6s"/>
         <circle class="bub" cx="216" cy="156" r="3" style="animation-delay:2.7s"/>
         <circle class="bub" cx="234" cy="164" r="2.2" style="animation-delay:.9s"/>
+        <circle class="bub" cx="188" cy="168" r="2" style="animation-delay:3.4s"/>
+        <circle class="bub" cx="142" cy="150" r="2.6" style="animation-delay:2.1s"/>
       </g>
     </svg>
   </section>
 
-  <!-- ══════ 第二幕：奥利奥 ══════ -->
+  <!-- ══════ 第二幕：奥利奥 → 生日蜡烛 ══════ -->
   <section class="scene" id="s1">
-    <div class="steps"><span class="s1">扭一扭</span><span class="s2">舔一舔</span><span class="s3">泡一泡</span></div>
+    <div class="steps">
+      <span class="s1">扭一扭</span><span class="s2">舔一舔</span>
+      <span class="s3">泡一泡</span><span class="s4">生日快乐</span>
+    </div>
 
-    <svg class="oreo" id="oreoV" viewBox="0 -46 320 572" aria-label="一块奥利奥">
+    <svg class="oreo" id="oreoV" viewBox="0 -46 320 572" aria-label="一块插着蜡烛的奥利奥">
       <defs>
         <radialGradient id="faceG" cx="34%" cy="22%" r="88%">
           <stop offset="0%" stop-color="#5a3b26"/>
@@ -365,12 +461,25 @@ body{
           <stop offset="0%" stop-color="#ffe4ac" stop-opacity=".9"/>
           <stop offset="100%" stop-color="#ffe4ac" stop-opacity="0"/>
         </radialGradient>
+        <radialGradient id="flameGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffd88a" stop-opacity=".8"/>
+          <stop offset="55%" stop-color="#ffb85e" stop-opacity=".2"/>
+          <stop offset="100%" stop-color="#ffb85e" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="waxG" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#e6d9bd"/>
+          <stop offset="42%" stop-color="#fbf5e8"/>
+          <stop offset="100%" stop-color="#ddcfb2"/>
+        </linearGradient>
+        <linearGradient id="flameG" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#e8892f"/>
+          <stop offset="48%" stop-color="#f9c04a"/>
+          <stop offset="100%" stop-color="#ffeaad"/>
+        </linearGradient>
 
         <clipPath id="clipTop"><ellipse cx="160" cy="114" rx="96" ry="86"/></clipPath>
-        <clipPath id="clipBtm"><ellipse cx="160" cy="158" rx="96" ry="86"/></clipPath>
         <clipPath id="clipMilk"><ellipse cx="160" cy="445" rx="270" ry="84"/></clipPath>
 
-        <!-- 花纹画在正圆里，用 scale(1,.9) 压扁 → 这样旋转才是"转"而不是"扭" -->
         <g id="pat">
           <circle r="82" fill="none" stroke="#e9c79a" stroke-width="3.4" opacity=".2"/>
           <g fill="#e9c79a" opacity=".2">
@@ -392,7 +501,6 @@ body{
 
         <mask id="lickMask" maskUnits="userSpaceOnUse" x="-40" y="-40" width="420" height="620">
           <rect x="-40" y="-40" width="420" height="620" fill="#fff"/>
-          <!-- 从左边"长"出来的啃掉区域（会累积，滑过去不会长回来）+ 边缘的圆点做不规则咬痕 -->
           <g class="lick-grow"><rect x="-260" y="40" width="260" height="250" fill="#000"/></g>
           <g class="lick-sweep">
             <circle cx="-250" cy="116" r="48" fill="#000"/>
@@ -402,24 +510,21 @@ body{
         </mask>
       </defs>
 
-      <!-- 牛奶池（在饼干后面）：前两步不出现，泡的时候才升上来 -->
+      <!-- 牛奶池 -->
       <ellipse cx="160" cy="436" rx="300" ry="130" fill="url(#milkHalo)"/>
-      <g class="milk-back">
-        <ellipse cx="160" cy="445" rx="270" ry="84" fill="url(#milkG)"/>
-      </g>
+      <g class="milk-back"><ellipse cx="160" cy="445" rx="270" ry="84" fill="url(#milkG)"/></g>
 
       <!-- ── 饼干 ── -->
       <g class="oreo-in">
         <g class="floaty">
 
-          <!-- 下片 + 奶油 -->
           <g class="bot-dive">
             <path d="M64 158A96 86 0 0 0 256 158L256 176A96 86 0 0 1 64 176Z" fill="url(#wallG)"/>
             <ellipse cx="160" cy="158" rx="96" ry="86" fill="url(#faceG)"/>
-            <ellipse cx="160" cy="158" rx="96" ry="86" fill="none" stroke="#e9c79a" stroke-width="1.6" opacity=".18"/>
+            <ellipse cx="134" cy="120" rx="60" ry="44" fill="#ffd9a0" opacity=".055"/>
+            <ellipse cx="160" cy="158" rx="96" ry="86" fill="none" stroke="#e9c79a" stroke-width="2" opacity=".26"/>
             <path d="M92 96C112 76 148 68 176 74" fill="none" stroke="#f7dcb4" stroke-width="2.4"
                   opacity=".13" stroke-linecap="round"/>
-            <!-- 奶油 -->
             <g mask="url(#lickMask)">
               <path d="M72 144A88 79 0 0 0 248 144L248 158A88 79 0 0 1 72 158Z" fill="url(#crmWallG)"/>
               <ellipse cx="160" cy="144" rx="88" ry="79" fill="url(#crmG)"/>
@@ -436,11 +541,16 @@ body{
               <ellipse cx="168" cy="188" rx="13" ry="6" opacity=".34"/>
               <ellipse cx="122" cy="182" rx="10" ry="5" opacity=".26"/>
             </g>
+            <!-- 从牛奶里浮起来时往下滴的奶 -->
+            <g fill="#fbf5e6">
+              <ellipse class="drip p1" cx="120" cy="248" rx="4" ry="6"/>
+              <ellipse class="drip p2" cx="176" cy="252" rx="3.4" ry="5.2"/>
+              <ellipse class="drip p3" cx="150" cy="256" rx="2.8" ry="4.4"/>
+            </g>
           </g>
 
-          <!-- 上片 -->
           <g class="top-lift">
-            <g class="top-dive">
+            <g>
               <path d="M64 114A96 86 0 0 0 256 114L256 132A96 86 0 0 1 64 132Z" fill="url(#wallG)"/>
               <ellipse cx="160" cy="114" rx="96" ry="86" fill="url(#faceG)"/>
               <g clip-path="url(#clipTop)"><use href="#pat" class="pat"/></g>
@@ -453,10 +563,9 @@ body{
         </g>
       </g>
 
-      <!-- 舔的那道暖光 -->
       <ellipse class="lick-light" cx="160" cy="150" rx="62" ry="52" fill="url(#lickGlow)"/>
 
-      <!-- ── 牛奶池（在饼干前面，泡进去的部分被盖住） ── -->
+      <!-- ── 牛奶池（在饼干前面） ── -->
       <g class="milk-front">
         <ellipse cx="160" cy="445" rx="270" ry="84" fill="url(#milkG)"/>
         <ellipse cx="160" cy="445" rx="270" ry="84" fill="none" stroke="#fffdf4" stroke-width="1.4" opacity=".34"/>
@@ -473,7 +582,6 @@ body{
             <ellipse class="ripple-m b" cx="160" cy="386" rx="36" ry="9"/>
           </g>
         </g>
-        <!-- 水花 -->
         <g fill="#fffdf8">
           <path class="splash a" d="M100 368C112 340 128 340 134 362C142 336 160 336 166 362
                    C174 338 192 342 202 368C180 382 122 382 100 368Z"/>
@@ -487,12 +595,53 @@ body{
           <circle class="drop d6" cx="146" cy="362" r="2.2" style="--dx:-18px"/>
         </g>
       </g>
+
+      <!-- ── 蜡烛（浮上来之后才出现） ── -->
+      <g class="candle-g">
+        <circle class="cglow" cx="160" cy="150" r="70" fill="url(#flameGlow)"/>
+        <rect x="149" y="180" width="22" height="73" rx="6" fill="url(#waxG)"/>
+        <ellipse cx="160" cy="180" rx="11" ry="4" fill="#fffbf2"/>
+        <path d="M160 180V169" stroke="#2a1b12" stroke-width="2.2" stroke-linecap="round" opacity=".85"/>
+        <g class="flame">
+          <g class="flick">
+            <path d="M160 131c5 9 8.5 13.5 8.5 18.5 0 5.4-3.8 9-8.5 9s-8.5-3.6-8.5-9
+                     c0-5 3.5-9.5 8.5-18.5z" fill="url(#flameG)"/>
+            <path d="M160 146c2.6 5 4.5 7.6 4.5 10.4 0 3.1-2 5.1-4.5 5.1s-4.5-2-4.5-5.1
+                     c0-2.8 1.9-5.4 4.5-10.4z" fill="#fff6cd" opacity=".95"/>
+          </g>
+        </g>
+        <path class="smoke" d="M160 168c-5-9 6-14 1-26" fill="none" stroke="#b9b0a2"
+              stroke-width="2" stroke-linecap="round"/>
+        <g fill="#ffe6ae">
+          <circle class="spark s1" cx="160" cy="150" r="2.6" style="--dx:-48px;--dy:-56px"/>
+          <circle class="spark s2" cx="160" cy="150" r="2" style="--dx:-30px;--dy:-74px"/>
+          <circle class="spark s3" cx="160" cy="150" r="3" style="--dx:-10px;--dy:-62px"/>
+          <circle class="spark s4" cx="160" cy="150" r="2.2" style="--dx:16px;--dy:-70px"/>
+          <circle class="spark s5" cx="160" cy="150" r="2.8" style="--dx:38px;--dy:-52px"/>
+          <circle class="spark s6" cx="160" cy="150" r="2" style="--dx:54px;--dy:-30px"/>
+          <circle class="spark s7" cx="160" cy="150" r="2.4" style="--dx:-46px;--dy:-28px"/>
+        </g>
+      </g>
     </svg>
   </section>
 
   <!-- ══════ 第三幕：结语 ══════ -->
   <section class="scene" id="s2">
     <div class="halo" aria-hidden="true"></div>
+    <div class="confetti" aria-hidden="true">
+      <i style="--x:6%;--d:0s;--t:9.5s"></i>
+      <i style="--x:14%;--d:3.2s;--t:11s"></i>
+      <i style="--x:23%;--d:6.4s;--t:10s"></i>
+      <i style="--x:31%;--d:1.4s;--t:12s"></i>
+      <i style="--x:39%;--d:8.1s;--t:9s"></i>
+      <i style="--x:47%;--d:4.6s;--t:11.5s"></i>
+      <i style="--x:56%;--d:.8s;--t:10.5s"></i>
+      <i style="--x:64%;--d:5.5s;--t:12.5s"></i>
+      <i style="--x:72%;--d:2.3s;--t:9.5s"></i>
+      <i style="--x:80%;--d:7.3s;--t:11s"></i>
+      <i style="--x:88%;--d:3.9s;--t:10s"></i>
+      <i style="--x:95%;--d:9.2s;--t:12s"></i>
+    </div>
     <div class="motes" aria-hidden="true">
       <i style="--x:9%;--d:0s;--t:13s;--s:3px"></i>
       <i style="--x:19%;--d:4.5s;--t:16s;--s:2px"></i>
@@ -507,7 +656,6 @@ body{
     </div>
 
     <div class="end-wrap">
-      <!-- ✏️ 结尾就这几句，想改就改 data-text -->
       <p class="l1" data-text="认识你之后，"></p>
       <p class="l1" data-text="很多普通的日子都变得挺值得期待的"></p>
       <p class="l2 gap" data-text="祝丽丽生日快乐"></p>
@@ -516,7 +664,7 @@ body{
     </div>
   </section>
 
-  <div id="hint"><b></b>轻点一下</div>
+  <div id="hint"><b></b><span id="hintText">轻点一下</span></div>
   <div id="dots"><i></i><i></i><i></i></div>
 </div>
 
@@ -524,11 +672,12 @@ body{
 (function () {
   "use strict";
 
-  var stage  = document.getElementById("stage");
-  var scenes = [].slice.call(document.querySelectorAll(".scene"));
-  var dots   = [].slice.call(document.querySelectorAll("#dots i"));
-  var hint   = document.getElementById("hint");
-  var oreoS  = document.getElementById("s1");
+  var stage   = document.getElementById("stage");
+  var scenes  = [].slice.call(document.querySelectorAll(".scene"));
+  var dots    = [].slice.call(document.querySelectorAll("#dots i"));
+  var hint    = document.getElementById("hint");
+  var hintTxt = document.getElementById("hintText");
+  var oreoS   = document.getElementById("s1");
 
   /* ── 音效：全部现场合成，不需要音频文件 ── */
   var ac = null;
@@ -551,7 +700,7 @@ body{
       o.type = "sine";
       o.frequency.setValueAtTime(f, t0);
       g.gain.setValueAtTime(0.0001, t0);
-      g.gain.exponentialRampToValueAtTime(vol || 0.06, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(vol || 0.055, t0 + 0.02);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + (dur || 0.8));
       o.connect(g); g.connect(a.destination);
       o.start(t0); o.stop(t0 + (dur || 0.8) + 0.05);
@@ -569,14 +718,14 @@ body{
       var bp = a.createBiquadFilter();
       bp.type = "bandpass"; bp.frequency.value = freq || 900; bp.Q.value = 1.1;
       var g = a.createGain();
-      g.gain.setValueAtTime(vol || 0.045, t0);
+      g.gain.setValueAtTime(vol || 0.04, t0);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
       src.connect(bp); bp.connect(g); g.connect(a.destination);
       src.start(t0);
     } catch (e) {}
   }
 
-  /* ── 结尾文字逐字拆开 ── */
+  /* ── 结尾逐字 ── */
   var idx = 0;
   [].forEach.call(document.querySelectorAll("[data-text]"), function (el) {
     var s = el.getAttribute("data-text");
@@ -590,29 +739,45 @@ body{
     }
   });
 
-  /* ── 幕的切换 ── */
+  /* ── 换幕 ── */
   var cur = -1;
   function setScene(n) {
     if (n === cur) return;
+    var old = cur >= 0 ? scenes[cur] : null;
     cur = n;
     scenes.forEach(function (s, i) { s.classList.toggle("on", i === n); });
     dots.forEach(function (d, i) { d.classList.toggle("on", i === n); });
-    hint.classList.toggle("show", n === 0);
+    if (old) {
+      old.classList.add("leaving");
+      setTimeout(function () { old.classList.remove("leaving"); }, 1100);
+    }
+    hint.classList.remove("show");
+    if (n === 0) setTimeout(function () { if (cur === 0) showHint("轻点一下"); }, 2400);
     if (n === 1) startShow();
   }
+  function showHint(t) { hintTxt.textContent = t; hint.classList.add("show"); }
 
-  /* ── 第二幕时间轴：点屏幕 = 跳到下一步 ── */
+  /* ── 第二幕时间轴 ── */
   var STEPS = [
-    { d: 1300, c: "twisted", sfx: function () { tone(680, .45, 0, .05); noise(.2, 0, .03, 1600); } },
-    { d: 2800, c: "licked",  sfx: function () { tone(880, .4, 0, .045); tone(1180, .45, .12, .035); } },
-    { d: 1700, c: "poured",  sfx: function () { tone(392, .6, 0, .045); } },
-    { d: 1400, c: "dunked",  sfx: function () { tone(300, .3, 0, .055); noise(.5, .05, .06, 520); } },
-    { d: 2600, c: null,      sfx: null }
+    { d: 1300, c: "twisted",
+      sfx: function () { tone(680, .45, 0, .05); noise(.2, 0, .03, 1600); } },
+    { d: 2800, c: "licked",
+      sfx: function () { tone(880, .4, 0, .045); tone(1180, .45, .12, .035); } },
+    { d: 1700, c: "poured",
+      sfx: function () { tone(392, .6, 0, .045); } },
+    { d: 1400, c: "dunked",
+      sfx: function () { tone(300, .3, 0, .055); noise(.5, .05, .06, 520); } },
+    { d: 1900, c: "risen",
+      sfx: function () { tone(494, .7, .1, .045); } },
+    { d: 1500, c: "candled",
+      sfx: function () { tone(659, .6, .6, .05); tone(988, .9, .72, .04); } },
+    { d: 1100, c: null, blow: true }
   ];
   var queue = [], pending = null, timer = null;
+  var canBlow = false, blown = false;
 
   function arm() {
-    if (!queue.length) { hint.classList.add("show"); return; }
+    if (!queue.length) return;
     pending = queue.shift();
     timer = setTimeout(fire, pending.d);
   }
@@ -622,25 +787,42 @@ body{
     if (!s) return;
     if (s.c) oreoS.classList.add(s.c);
     if (s.sfx) s.sfx();
+    if (s.blow) { canBlow = true; showHint("吹蜡烛"); return; }
     arm();
   }
-  function startShow() { queue = STEPS.slice(); arm(); }
+  function startShow() { queue = STEPS.slice(); canBlow = false; blown = false; arm(); }
+
+  function blowOut() {
+    canBlow = false; blown = true;
+    hint.classList.remove("show");
+    oreoS.classList.add("blown");
+    noise(.42, 0, .07, 700);
+    tone(392, .5, .06, .04);
+    tone(587, .9, .5, .04);
+    tone(880, 1.3, .64, .035);
+    setTimeout(function () { setScene(2); }, 2950);   // 烟升上去，自然飘进结尾
+  }
 
   /* ── 点击 / 键盘 ── */
-  function tapRing(x, y) {
+  function fx(x, y) {
+    var b = document.createElement("span");
+    b.className = "bloom";
+    b.style.left = x + "px"; b.style.top = y + "px";
+    document.body.appendChild(b);
     var r = document.createElement("span");
     r.className = "tap-ring";
     r.style.left = x + "px"; r.style.top = y + "px";
     document.body.appendChild(r);
-    setTimeout(function () { r.remove(); }, 900);
+    setTimeout(function () { b.remove(); r.remove(); }, 1300);
   }
   function advance(x, y) {
-    tapRing(x, y);
+    fx(x, y);
     if (cur === 0) { tone(784, .85, 0, .05); tone(1174, 1, .12, .035); setScene(1); return; }
     if (cur === 1) {
-      if (queue.length || pending) { fire(); return; }   // 还在演 → 加速到下一步
-      tone(660, .85, 0, .05); tone(990, 1.1, .14, .035);
-      setScene(2);
+      if (blown) return;
+      if (canBlow) { blowOut(); return; }
+      if (queue.length || pending) fire();      // 还在演 → 加速到下一步
+      return;
     }
   }
   stage.addEventListener("click", function (e) { advance(e.clientX, e.clientY); }, { passive: true });
@@ -652,7 +834,6 @@ body{
   });
 
   setScene(0);
-  setTimeout(function () { if (cur === 0) hint.classList.add("show"); }, 2800);
 })();
 </script>
 </body>
